@@ -3,6 +3,11 @@ resource "aws_db_subnet_group" "postgres_subnet_group" {
   subnet_ids = var.ngap_subnets
 }
 
+# Ignore aws profile in case this was deployed with CI or
+# in a machine without aws profile defined
+locals {
+  used_profile = contains([var.profile], "default") ? "" : "--profile ${var.profile}"
+}
 # https://blog.faraday.io/how-to-create-an-rds-instance-with-terraform/ 
 resource "aws_db_instance" "postgresql" {
   # set apply_immediately true just for testing
@@ -17,14 +22,12 @@ resource "aws_db_instance" "postgresql" {
   password                   = var.postgres_user_pw
   username                   = "postgres"
   iam_database_authentication_enabled = "true"
-  # disable backups to create DB faster
-  backup_retention_period = 0
-  #backup_retention_period    = 7
+  backup_retention_period    = 7
   backup_window              = "03:00-06:00"
   maintenance_window         = "Mon:00:00-Mon:03:00"
   #auto_minor_version_upgrade = "${var.auto_minor_version_upgrade}"
   port                       = var.database_port
-  vpc_security_group_ids     = var.ngap_sgs
+  vpc_security_group_ids     = [aws_security_group.vpc-postgres-ingress-all-egress.id]
   db_subnet_group_name       = aws_db_subnet_group.postgres_subnet_group.id
   # parameter_group_name       = "default.postgres11"
   storage_encrypted          = false
@@ -40,7 +43,7 @@ resource "null_resource" "bootstrap" {
   }
 
   provisioner "local-exec" {
-    command = "aws lambda invoke --function-name ${aws_lambda_function.db_deploy.arn} --profile ${var.profile} --region ${var.region} 'invoke-response.out'"
+    command = "aws lambda invoke --function-name ${aws_lambda_function.db_deploy.arn} ${local.used_profile} --region ${var.region} 'invoke-response.out'"
   }
 
   depends_on = [aws_db_instance.postgresql]
