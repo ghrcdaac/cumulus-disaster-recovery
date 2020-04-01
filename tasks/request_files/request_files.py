@@ -91,7 +91,8 @@ def task(event, context):              #pylint: disable-msg=unused-argument
 
     gran = process_granules(s3, gran, glacier_bucket, exp_days)
 
-    return gran
+    # Cumulus expects response (payload.granules) to be a list of granule objects.
+    return { 'granules': [ gran ] }
 
 def process_granules(s3, gran, glacier_bucket, exp_days):        # pylint: disable-msg=invalid-name
     """Call restore_object for the files in the granule_list
