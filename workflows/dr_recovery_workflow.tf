@@ -1,5 +1,5 @@
 module "dr_recovery_workflow" {
-  source = "https://github.com/nasa/cumulus/releases/download/v1.16.0/terraform-aws-cumulus-workflow.zip"
+  source = "https://github.com/nasa/cumulus/releases/download/v1.21.0/terraform-aws-cumulus-workflow.zip"
 
   prefix          = var.prefix
   name            = "DrRecoveryWorkflow"
