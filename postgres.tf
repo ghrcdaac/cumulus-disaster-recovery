@@ -8,7 +8,7 @@ resource "aws_db_subnet_group" "postgres_subnet_group" {
 locals {
   used_profile = contains([var.profile], "default") ? "" : "--profile ${var.profile}"
 }
-# https://blog.faraday.io/how-to-create-an-rds-instance-with-terraform/ 
+# https://blog.faraday.io/how-to-create-an-rds-instance-with-terraform/
 resource "aws_db_instance" "postgresql" {
   # set apply_immediately true just for testing
   apply_immediately = false
@@ -54,6 +54,7 @@ resource "aws_ssm_parameter" "drdb-admin-pass" {
   type  = "SecureString"
   value = "${var.postgres_user_pw}"
   tags = var.default_tags
+  overwrite = true
 }
 
 resource "aws_ssm_parameter" "drdb-user-pass" {
@@ -61,6 +62,7 @@ resource "aws_ssm_parameter" "drdb-user-pass" {
   type  = "SecureString"
   value = "${var.database_app_user_pw}"
   tags = var.default_tags
+  overwrite = true
 }
 
 resource "aws_ssm_parameter" "drdb-host" {
@@ -68,4 +70,5 @@ resource "aws_ssm_parameter" "drdb-host" {
   type  = "String"
   value = "${aws_db_instance.postgresql.address}"
   tags = var.default_tags
+  overwrite = true
 }
