@@ -195,7 +195,7 @@ provider "aws" {
 
 We will be adding a `disaster-recovery` module to `cumulus-tf/main.tf`. First, since there isn't a distributed version of the `disaster-recovery` module at the time of writing this documentation, you'll have to clone this repository locally: `https://github.com/podaac/cumulus-disaster-recovery.git`.
 
-In the `disaster-recovery` repo, build the lambda tasks with `./bin/build_tasks.sh "<version_number>"`.
+In the `disaster-recovery` repo, build the lambda tasks with `./bin/build_tasks.sh "<version_number>"`. You can check the disaster-recovery module below to determine the dr_version. Default is "0.1.1"
 
 Once that is done, navigate to `cumulus-tf/main.tf` within your Cumulus deployment directory and add the following module:
 ```
@@ -205,7 +205,7 @@ module "disaster-recovery" {
   prefix = var.prefix
   vpc_id = var.vpc_id
 
-  dr_version               = "0.1.0"
+  dr_version               = "0.1.1"
   ngap_subnets             = var.ngap_db_subnets
   public_bucket            = var.buckets["public"]["name"]
   glacier_bucket           = var.buckets["glacier"]["name"]
@@ -332,7 +332,7 @@ resource "aws_lambda_function" "copy_to_glacier" {
   }
 }
 ```
-Add the copy to glacier step into your cumulus workflow. GHRC adds this step into our ingest_granule_workflow.tf file between our SyncGranule and ChooseProcess steps
+Add the copy to glacier step into your cumulus workflow. GHRC adds this step into our ingest_granule_workflow.tf file before our MetadataExtractor step.
 ```
       "Next": "CopyToGlacier"
     },
@@ -380,6 +380,6 @@ Add the copy to glacier step into your cumulus workflow. GHRC adds this step int
         "MaxAttempts": 3
       }
     ],
-    "Next": "ChooseProcess"
+    "Next": "MetadataExtractor"
     },
 ```
