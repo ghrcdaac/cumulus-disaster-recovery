@@ -259,7 +259,7 @@ Copy the workflow from `workflows/dr_recovery_workflow.tf` into your `cumulus-tf
 
 ### Collection configuration
 To configure a collection to enable Disaster Recovery, add the line
-`"granuleRecoveryWorkflow": DrRecoveryWorkflow"` to the collection configuration:
+`"granuleRecoveryWorkflow": "DrRecoveryWorkflow"` to the collection configuration:
 ```
 {
   "queriedAt": "2019-11-07T22:49:46.842Z",
@@ -275,7 +275,7 @@ To configure a collection to enable Disaster Recovery, add the line
   "meta": {
     "response-endpoint": "arn:aws:sns:us-west-2:012345678912:providerResponseSNS",
     "glacier-bucket": "podaac-sndbx-cumulus-glacier",
-    "granuleRecoveryWorkflow": DrRecoveryWorkflow"
+    "granuleRecoveryWorkflow": "DrRecoveryWorkflow"
   },
   "files": [
     {
