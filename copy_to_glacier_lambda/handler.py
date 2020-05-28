@@ -81,10 +81,9 @@ def task(event, context):
     granule_data = {}
     for granule_url in event_input:
         filename = os.path.basename(granule_url)
-        granule_id = filename.rstrip('.cmr.xml')
-        if granule_id not in granule_data.keys():
-            granule_data[granule_id] = {'granuleId': granule_id, 'files': []}
-        granule_data[granule_id]['files'].append(
+        if filename not in granule_data.keys():
+            granule_data[filename] = {'granuleId': filename, 'files': []}
+        granule_data[filename]['files'].append(
             {
                 "path": config['fileStagingDir'],
                 "url_path": config.get('url_path', config['fileStagingDir']),

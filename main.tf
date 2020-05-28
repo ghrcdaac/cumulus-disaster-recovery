@@ -2,6 +2,8 @@ locals {
   default_tags = {
     Deployment = var.prefix
   }
+  request_source_hash = filemd5("${path.module}/tasks/request_files/request-${var.dr_version}.zip")
+  extract_filepaths_hash = filemd5("${path.module}/tasks/extract_filepaths_for_granule/extract-${var.dr_version}.zip")
 }
 
 terraform {
@@ -60,6 +62,7 @@ resource "aws_lambda_function" "db_deploy" {
 
 resource "aws_lambda_function" "extract_filepaths_for_granule_lambda" {
   filename      = "${path.module}/tasks/extract_filepaths_for_granule/extract-${var.dr_version}.zip"
+  source_code_hash = "${local.extract_filepaths_hash}"
   function_name = "${var.prefix}_extract_filepaths_for_granule"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "extract_filepaths_for_granule.handler"
@@ -76,6 +79,7 @@ resource "aws_lambda_function" "extract_filepaths_for_granule_lambda" {
 resource "aws_lambda_function" "request_files_lambda" {
   filename      = "${path.module}/tasks/request_files/request-${var.dr_version}.zip"
   function_name = "${var.prefix}_request_files"
+  source_code_hash = "${local.request_source_hash}"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "request_files.handler"
   runtime       = "python3.7"
