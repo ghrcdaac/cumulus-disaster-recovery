@@ -332,54 +332,54 @@ resource "aws_lambda_function" "copy_to_glacier" {
   }
 }
 ```
-Add the copy to glacier step into your cumulus workflow. GHRC adds this step into our ingest_granule_workflow.tf file before our MetadataExtractor step.
+Add the copy to glacier step into your cumulus workflow. GHRC adds this step into our ingest_granule_workflow.tf file after our PostToCMR step.
 ```
-      "Next": "CopyToGlacier"
-    },
-	"CopyToGlacier": {
-    "Parameters": {
-      "cma": {
-        "event.$": "$",
-        "task_config": {
-          "bucket": "{$.meta.buckets.internal.name}",
-          "buckets": "{$.meta.buckets}",
-          "distribution_endpoint": "{$.meta.distribution_endpoint}",
-          "files_config": "{$.meta.collection.files}",
-          "fileStagingDir": "{$.meta.collection.url_path}",
-          "granuleIdExtraction": "{$.meta.collection.granuleIdExtraction}",
-          "collection": "{$.meta.collection}",
-          "cumulus_message": {
-            "input": "{[$.payload.granules[*].files[*].filename]}",
-            "outputs": [
-              {
-                "source": "{$}",
-                "destination": "{$.payload}"
-              }
-            ]
-          }
-        }
-      }
-    },
-    "Type": "Task",
-    "Resource": "${aws_lambda_function.copy_to_glacier.arn}",
-    "Catch": [
-      {
-        "ErrorEquals": [
-          "States.ALL"
-        ],
-        "ResultPath": "$.exception",
-        "Next": "WorkflowFailed"
-      }
-    ],
-    "Retry": [
-      {
-        "ErrorEquals": [
-          "States.ALL"
-        ],
-        "IntervalSeconds": 2,
-        "MaxAttempts": 3
-      }
-    ],
-    "Next": "MetadataExtractor"
-    },
+      "Next":"CopyToGlacier"
+      },
+      "CopyToGlacier":{
+         "Parameters":{
+            "cma":{
+               "event.$":"$",
+               "task_config":{
+                  "bucket":"{$.meta.buckets.internal.name}",
+                  "buckets":"{$.meta.buckets}",
+                  "distribution_endpoint":"{$.meta.distribution_endpoint}",
+                  "files_config":"{$.meta.collection.files}",
+                  "fileStagingDir":"{$.meta.collection.url_path}",
+                  "granuleIdExtraction":"{$.meta.collection.granuleIdExtraction}",
+                  "collection":"{$.meta.collection}",
+                  "cumulus_message":{
+                     "input":"{[$.payload.granules[*].files[*].filename]}",
+                     "outputs":[
+                        {
+                           "source":"{$}",
+                           "destination":"{$.payload}"
+                        }
+                     ]
+                  }
+               }
+            }
+         },
+         "Type":"Task",
+         "Resource":"${aws_lambda_function.copy_to_glacier.arn}",
+         "Catch":[
+            {
+               "ErrorEquals":[
+                  "States.ALL"
+               ],
+               "ResultPath":"$.exception",
+               "Next":"WorkflowFailed"
+            }
+         ],
+         "Retry":[
+            {
+               "ErrorEquals":[
+                  "States.ALL"
+               ],
+               "IntervalSeconds":2,
+               "MaxAttempts":3
+            }
+         ],
+         "Next":"WorkflowSucceeded"
+      },
 ```
