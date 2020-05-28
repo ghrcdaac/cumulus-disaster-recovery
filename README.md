@@ -195,7 +195,7 @@ provider "aws" {
 
 We will be adding a `disaster-recovery` module to `cumulus-tf/main.tf`. First, since there isn't a distributed version of the `disaster-recovery` module at the time of writing this documentation, you'll have to clone this repository locally: `https://github.com/podaac/cumulus-disaster-recovery.git`.
 
-In the `disaster-recovery` repo, build the lambda tasks with `./bin/build_tasks.sh "<version_number>"`.
+In the `disaster-recovery` repo, build the lambda tasks with `./bin/build_tasks.sh "<version_number>"`. You can check the disaster-recovery module below to determine the dr_version. Default is "0.1.1"
 
 Once that is done, navigate to `cumulus-tf/main.tf` within your Cumulus deployment directory and add the following module:
 ```
@@ -205,7 +205,7 @@ module "disaster-recovery" {
   prefix = var.prefix
   vpc_id = var.vpc_id
 
-  dr_version               = "0.1.0"
+  dr_version               = "0.1.1"
   ngap_subnets             = var.ngap_db_subnets
   public_bucket            = var.buckets["public"]["name"]
   glacier_bucket           = var.buckets["glacier"]["name"]
@@ -259,7 +259,7 @@ Copy the workflow from `workflows/dr_recovery_workflow.tf` into your `cumulus-tf
 
 ### Collection configuration
 To configure a collection to enable Disaster Recovery, add the line
-`"granuleRecoveryWorkflow": DrRecoveryWorkflow"` to the collection configuration:
+`"granuleRecoveryWorkflow": "DrRecoveryWorkflow"` to the collection configuration:
 ```
 {
   "queriedAt": "2019-11-07T22:49:46.842Z",
@@ -275,7 +275,7 @@ To configure a collection to enable Disaster Recovery, add the line
   "meta": {
     "response-endpoint": "arn:aws:sns:us-west-2:012345678912:providerResponseSNS",
     "glacier-bucket": "podaac-sndbx-cumulus-glacier",
-    "granuleRecoveryWorkflow": DrRecoveryWorkflow"
+    "granuleRecoveryWorkflow": "DrRecoveryWorkflow"
   },
   "files": [
     {
@@ -332,54 +332,54 @@ resource "aws_lambda_function" "copy_to_glacier" {
   }
 }
 ```
-Add the copy to glacier step into your cumulus workflow. GHRC adds this step into our ingest_granule_workflow.tf file between our SyncGranule and ChooseProcess steps
+Add the copy to glacier step into your cumulus workflow. GHRC adds this step into our ingest_granule_workflow.tf file after our PostToCMR step.
 ```
-      "Next": "CopyToGlacier"
-    },
-	"CopyToGlacier": {
-    "Parameters": {
-      "cma": {
-        "event.$": "$",
-        "task_config": {
-          "bucket": "{$.meta.buckets.internal.name}",
-          "buckets": "{$.meta.buckets}",
-          "distribution_endpoint": "{$.meta.distribution_endpoint}",
-          "files_config": "{$.meta.collection.files}",
-          "fileStagingDir": "{$.meta.collection.url_path}",
-          "granuleIdExtraction": "{$.meta.collection.granuleIdExtraction}",
-          "collection": "{$.meta.collection}",
-          "cumulus_message": {
-            "input": "{[$.payload.granules[*].files[*].filename]}",
-            "outputs": [
-              {
-                "source": "{$}",
-                "destination": "{$.payload}"
-              }
-            ]
-          }
-        }
-      }
-    },
-    "Type": "Task",
-    "Resource": "${aws_lambda_function.copy_to_glacier.arn}",
-    "Catch": [
-      {
-        "ErrorEquals": [
-          "States.ALL"
-        ],
-        "ResultPath": "$.exception",
-        "Next": "WorkflowFailed"
-      }
-    ],
-    "Retry": [
-      {
-        "ErrorEquals": [
-          "States.ALL"
-        ],
-        "IntervalSeconds": 2,
-        "MaxAttempts": 3
-      }
-    ],
-    "Next": "ChooseProcess"
-    },
+      "Next":"CopyToGlacier"
+      },
+      "CopyToGlacier":{
+         "Parameters":{
+            "cma":{
+               "event.$":"$",
+               "task_config":{
+                  "bucket":"{$.meta.buckets.internal.name}",
+                  "buckets":"{$.meta.buckets}",
+                  "distribution_endpoint":"{$.meta.distribution_endpoint}",
+                  "files_config":"{$.meta.collection.files}",
+                  "fileStagingDir":"{$.meta.collection.url_path}",
+                  "granuleIdExtraction":"{$.meta.collection.granuleIdExtraction}",
+                  "collection":"{$.meta.collection}",
+                  "cumulus_message":{
+                     "input":"{[$.payload.granules[*].files[*].filename]}",
+                     "outputs":[
+                        {
+                           "source":"{$}",
+                           "destination":"{$.payload}"
+                        }
+                     ]
+                  }
+               }
+            }
+         },
+         "Type":"Task",
+         "Resource":"${aws_lambda_function.copy_to_glacier.arn}",
+         "Catch":[
+            {
+               "ErrorEquals":[
+                  "States.ALL"
+               ],
+               "ResultPath":"$.exception",
+               "Next":"WorkflowFailed"
+            }
+         ],
+         "Retry":[
+            {
+               "ErrorEquals":[
+                  "States.ALL"
+               ],
+               "IntervalSeconds":2,
+               "MaxAttempts":3
+            }
+         ],
+         "Next":"WorkflowSucceeded"
+      },
 ```
