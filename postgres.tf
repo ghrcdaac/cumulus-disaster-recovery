@@ -54,7 +54,6 @@ resource "aws_ssm_parameter" "drdb-admin-pass" {
   type  = "SecureString"
   value = "${var.postgres_user_pw}"
   tags = var.default_tags
-  overwrite = true
 }
 
 resource "aws_ssm_parameter" "drdb-user-pass" {
@@ -62,7 +61,6 @@ resource "aws_ssm_parameter" "drdb-user-pass" {
   type  = "SecureString"
   value = "${var.database_app_user_pw}"
   tags = var.default_tags
-  overwrite = true
 }
 
 resource "aws_ssm_parameter" "drdb-host" {
@@ -70,5 +68,4 @@ resource "aws_ssm_parameter" "drdb-host" {
   type  = "String"
   value = "${aws_db_instance.postgresql.address}"
   tags = var.default_tags
-  overwrite = true
 }
