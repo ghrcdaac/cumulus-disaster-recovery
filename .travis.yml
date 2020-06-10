@@ -1,0 +1,16 @@
+sudo: false
+dist: trusty
+language: generic
+jobs:
+  include:
+    - script: echo "Running unit tests (1)"
+    - script: echo "Running unit tests (2)"
+    - stage: GitHub Release
+    - stage: GitHub Release
+      script: skip
+      deploy:
+        provider: releases
+        api_key: ${{ secrets.GITHUB_TOKEN }}
+        skip_cleanup: true
+        on:
+          tags: true
