@@ -90,5 +90,7 @@ variable "lambda_timeout" {
 variable "restore_complete_filter_prefix" {
   default = "orca"
 }
-
+variable "profile" {
+  default = "default"
+}
 variable "tags" {}
