@@ -1,9 +1,6 @@
 sudo: false
 dist: trusty
-language: ruby
-rvm:
- - 2.2
- - jruby
+language: generic
 jobs:
   include:
     - script: echo "Running unit tests (1)"
