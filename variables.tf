@@ -15,9 +15,7 @@ variable "restore_complete_filter_prefix" {
   default = ""
 }
 
-variable "glacier_bucket" {
-  default = ""
-}
+variable "glacier_bucket" {}
 
 variable "private_bucket" {
   default = ""
@@ -103,17 +101,11 @@ variable "database_app_user_pw" {
   default = ""
 }
 
-variable "ddl_dir" {
-  default = "ddl/"
-}
 
-variable "drop_database" {
-  default = "False"
-}
 
-variable "platform" {
-  default = "AWS"
-}
+
+
+
 
 variable "default_tags" {
   type = "map"
