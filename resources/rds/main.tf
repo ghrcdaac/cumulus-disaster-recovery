@@ -52,7 +52,7 @@ resource "null_resource" "bootstrap" {
 resource "aws_ssm_parameter" "drdb-admin-pass" {
   name  = "drdb-admin-pass"
   type  = "SecureString"
-  value = "${var.postgres_user_pw}"
+  value = var.postgres_user_pw
   tags = var.default_tags
   overwrite = true
 }
@@ -68,7 +68,7 @@ resource "aws_ssm_parameter" "drdb-user-pass" {
 resource "aws_ssm_parameter" "drdb-host" {
   name  = "drdb-host"
   type  = "String"
-  value = "${aws_db_instance.postgresql.address}"
+  value = aws_db_instance.postgresql.address
   tags = var.default_tags
   overwrite = true
 }

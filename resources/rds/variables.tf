@@ -10,7 +10,6 @@ variable "profile" {
 
 variable "postgres_user_pw" {}
 
-variable "database_host" {}
 
 variable "database_port" {
   default = "5432"
@@ -27,6 +26,8 @@ variable "vpc_postgres_ingress_all_egress_id" {
 variable "db_lambda_deploy_arn" {}
 
 variable "lambda_source_code_hash" {}
-variable "region" {}
+variable "region" {
+  default = "us-west-2"
+}
 variable "default_tags" {}
 variable "database_app_user_pw" {}
