@@ -39,7 +39,7 @@ module "orca_rds" {
   database_port = var.database_port
   vpc_postgres_ingress_all_egress_id = module.orca_lambdas.vpc_postgres_ingress_all_egress_id
   db_lambda_deploy_arn = module.orca_lambdas.db_deploy.arn
-  lambda_source_code_hash = module.orca_lambdas.db_deploy.source_code_hash
+  lambda_source_code_hash = module.orca_lambdas.db_deploy.arn
   database_app_user_pw = var.database_app_user_pw
   region = var.region
   default_tags = var.default_tags

@@ -13,3 +13,7 @@ output "extract_filepath_arn" {
 output "request_files_arn" {
   value = aws_lambda_function.request_files_lambda.arn
 }
+
+output "copy_to_glacier_arn" {
+  value = aws_lambda_function.copy_to_glacier.arn
+}

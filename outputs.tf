@@ -101,6 +101,11 @@ output "request_files_lambda_arn" {
   value       = module.orca.orca_lambda_request_files_arn
 }
 
+output "copy_to_glacier_lambda_arn" {
+  description = "ARN identifying copy_to_glacier lambda"
+  value       = module.orca.orca_lambda_copy_to_glacier_arn
+}
+
 # Can re-enable if we want. Don't have this information if we're using the default.
 # output "this_db_parameter_group_id" {
 #   description = "The db parameter group id"
