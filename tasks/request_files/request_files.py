@@ -48,7 +48,6 @@ def task(event, context):              #pylint: disable-msg=unused-argument
         Raises:
             RestoreRequestError: Thrown if there are errors with the input request.
     """
-    print(event)
     try:
         exp_days = int(os.environ['RESTORE_EXPIRE_DAYS'])
     except KeyError:

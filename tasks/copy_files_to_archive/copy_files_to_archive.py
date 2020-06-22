@@ -52,7 +52,6 @@ def task(records, retries, retry_sleep_secs):
         Raises:
             CopyRequestError: Thrown if there are errors with the input records or the copy failed.
     """
-
     files = get_files_from_records(records)
     attempt = 1
     s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
@@ -295,7 +294,7 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
             The same dict that is returned for a successful copy, will be included in the
             message, with 'success' = False for the files for which the copy failed.
     """
-    print(event)
+
     logging.basicConfig(level=logging.INFO,
                         format='%(levelname)s: %(asctime)s: %(message)s')
     try:
