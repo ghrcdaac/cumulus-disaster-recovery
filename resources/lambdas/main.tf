@@ -9,7 +9,7 @@ module "lambda_security_group" {
   source = "../security_groups"
   tags = var.tags
   vpc_id = var.vpc_id
-  
+  prefix = var.prefix
 }
 
 module "restore_object_arn" {

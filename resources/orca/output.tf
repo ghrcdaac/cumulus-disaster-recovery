@@ -13,3 +13,8 @@ output "orca_lambda_extract_filepath_arn" {
 output "orca_lambda_request_files_arn" {
   value = module.orca_lambdas.request_files_arn
 }
+
+output "orca_lambda_copy_to_glacier_arn" {
+  value = module.orca_lambdas.copy_to_glacier_arn
+}
+
