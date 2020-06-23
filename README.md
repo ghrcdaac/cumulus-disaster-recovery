@@ -1,23 +1,22 @@
-## Clone and build Disaster Recovery
+## Clone and build Operational Recovery Cloud Archive (ORCA)
 
-Clone the `dr-podaac-swot` repo from <https://git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git>
+Clone the `dr-podaac-swot` repo from https://github.com/ghrcdaac/operational-recovery-cloud-archive
 
 ```
-git clone https://git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git disaster-recovery
+git clone https://github.com/ghrcdaac/operational-recovery-cloud-archive
 ```
 ## Build lambdas
-Before you can deploy this infrastructure, the lambda function source-code must be built.
+Before you can deploy this infrastructure, you must download the release zip or the build the lambda function source-code locally.
 
-`./bin/build_tasks.sh` will crawl the `tasks` directory and build a `.zip` file (currently by just `zipping` all python files and dependencies) in each of it's sub-directories. That `.zip` is then referenced in the `main.tf` lamdba definitions.
+`./bin/build_tasks.sh` will crawl the `tasks` directory and build a `.zip` file (currently by just `zipping` all python files and dependencies) in each of it's sub-directories. That `.zip` is then referenced in the `resources/lambdas/main.tf` lamdba definitions.
 
 ```
-cd disaster-recovery
 ./bin/build_tasks.sh
 ```
 
-# Disaster Recovery Deployment
+# ORCA Deployment
 
-The Disaster Recovery deployment is done with [Terraform root module](https://www.terraform.io/docs/configuration/modules.html),
+The ORCA deployment is done with [Terraform root module](https://www.terraform.io/docs/configuration/modules.html),
 `main.tf`.
 
 The following instructions will walk you through installing Terraform,
@@ -85,7 +84,7 @@ $ aws dynamodb create-table \
 
 ## Configure and deploy the `main` root module
 
-These steps should be executed in the `disaster-recovery` directory.
+These steps should be executed in the root directory of the repo.
 
 Create a `terraform.tf` file, substituting the appropriate values for `bucket`
 and `dynamodb_table`. This tells Terraform where to store its
@@ -107,45 +106,45 @@ terraform {
 First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `terraform.tfvars` in your working directory. This is where you will place input variables to Terraform.
 
 **Necessary:**
-* ngap_subnets - NGAP Subnets (array)
-* ngap_sgs - NGAP Security Groups (array)
-* glacier_bucket - Bucket with Glacier policy
-* public_bucket - Bucket with public permissions (Cumulus public bucket)
-* private_bucket - Bucket with private permissions (Cumulus private bucket)
-* internal_bucket - Analogous to the Cumulus internal bucket 
-* protected_bucket - Analogous to the Cumulus protected bucket
-* permissions_boundary_arn - Permission Boundary Arn (Policy) for NGAP compliance
-* postgres_user_pw - password for the postgres user
-* database_name - the name of the database to be created for the application
-* database_app_user - the application user 
-* database_app_user_pw - the password for the application user
+* `ngap_subnets` - NGAP Subnets (array)
+* `vpc_id` - ID of VPC to place resources in - recommended that this be a private VPC (or at least one with restricted access).
+* `glacier_bucket` - Bucket with Glacier policy
+* `public_bucket` - Bucket with public permissions (Cumulus public bucket)
+* `private_bucket` - Bucket with private permissions (Cumulus private bucket)
+* `internal_bucket` - Analogous to the Cumulus internal bucket 
+* `protected_bucket` - Analogous to the Cumulus protected bucket
+* `permissions_boundary_arn` - Permission Boundary Arn (Policy) for NGAP compliance
+* `postgres_user_pw` - password for the postgres user
+* `database_name` - disaster_recovery
+* `database_app_user` - druser 
+* `database_app_user_pw` - the password for the application user
 
 **Optional:**
-* prefix - Prefix that will be pre-pended to resource names created by terraform. 
+* `prefix` - Prefix that will be pre-pended to resource names created by terraform. 
   Defaults to `dr`.
-* profile - AWS CLI Profile (configured via `aws configure`) to use. 
+* `profile` - AWS CLI Profile (configured via `aws configure`) to use. 
   Defaults to `default`.
-* region - Your AWS region. 
+* `region` - Your AWS region. 
   Defaults to `us-west-2`.
-* restore_expire_days - How many days to restore a file for. 
+* `restore_expire_days` - How many days to restore a file for. 
   Defaults to 5.
-* restore_request_retries - How many times to retry a restore request to Glacier. 
+* `restore_request_retries` - How many times to retry a restore request to Glacier. 
   Defaults to 3.
-* restore_retry_sleep_secs - How many seconds to wait between retry calls to `restore_object`. 
+* `restore_retry_sleep_secs` - How many seconds to wait between retry calls to `restore_object`. 
   Defaults to 3.
-* restore_retrieval_type -  the Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'. 
+* `restore_retrieval_type` -  the Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'. 
   Defaults to `Standard`. Understand the costs associated with the tiers before modifying.
-* copy_retries - How many times to retry a copy request from the restore location to the archive location. 
+* `copy_retries` - How many times to retry a copy request from the restore location to the archive location. 
   Defaults to 3.
-* copy_retry_sleep_secs - How many seconds to wait between retry calls to `copy_object`. 
+* `copy_retry_sleep_secs` - How many seconds to wait between retry calls to `copy_object`. 
   Defaults to 0.
-* ddl_dir - the location of the ddl dir that contains the sql to create the application database. 
+* `ddl_dir` - the location of the ddl dir that contains the sql to create the application database. 
   Defaults to 'ddl/'.
-* drop_database - Whether or not to drop the database if it exists (True), or keep it (False). 
+* `drop_database` - Whether or not to drop the database if it exists (True), or keep it (False). 
   Defaults to False.
-* database_port - the port for the postgres database. 
+* `database_port` - the port for the postgres database. 
   Defaults to '5432'.
-* platform - indicates if running locally (onprem) or in AWS (AWS). 
+* `platform` - indicates if running locally (onprem) or in AWS (AWS). 
   Defaults to 'AWS'.
 
 ## Deploying with Terraform
@@ -153,7 +152,7 @@ Run `terraform init`.
 Run `terraform plan` #optional, but allows you to preview the deploy.
 Run `terraform apply`.
 
-This will deploy Disaster Recovery.
+This will deploy ORCA.
 
 ## Delete Terraform stack
 If you want to remove it:
@@ -162,10 +161,11 @@ terraform destroy
 ```
 
 ## Integrating with Cumulus
-Integrate Disaster Recovery with Cumulus to be able to recover a granule from the Cumulus Dashboard.
+Integrate ORCA with Cumulus to be able to recover a granule from the Cumulus Dashboard.
 
-### Define the Disaster Recovery workflow
-Copy the workflow from `workflows.yml.dr` into your Cumulus workflow.
+### Define the ORCA workflow (Cumulus < v1.15)
+
+Copy the workflow from `workflows/workflows.yml.dr` into your Cumulus workflow.
 
 Set the values of these environment variables to the ARN for the 
 {prefix}-extract-filepaths-for-granule and {prefix}-request-files lambdas,
@@ -175,9 +175,128 @@ DR_EXTRACT_LAMBDA_ARN=arn:aws:lambda:us-west-2:012345678912:function:dr_extract_
 
 DR_REQUEST_LAMBDA_ARN=arn:aws:lambda:us-west-2:012345678912:function:dr_request_files
 ```
+
+Add an `aws` provider to `main.tf`:
+
+```
+provider "aws" {
+  version = "~> 2.13"
+  region  = var.region
+  profile = var.profile
+}
+```
+
+### Integrating ORCA With Cumulus >= v1.15
+
+#### Adding a ORCA module to the Cumulus deployment
+
+Navigate to `cumulus-tf/main.tf` within your Cumulus deployment directory and add the following module:
+```
+module "orca" {
+  source = "https://github.com/ghrcdaac/operational-recovery-cloud-archive/releases/download/1.0.2/orca-1.0.2.zip"
+
+  dr_version = "1.0.2"
+  prefix = var.prefix
+  subnet_ids = module.ngap.ngap_subnets_ids
+  database_port = "5432"
+  database_user_pw = var.database_user_pw
+  database_name = var.database_name
+  database_app_user = var.database_app_user
+  database_app_user_pw = var.database_app_user_pw
+  ddl_dir = "ddl/"
+  drop_database = "False"
+  platform = "AWS"
+  lambda_timeout = 300
+  restore_complete_filter_prefix = ""
+  vpc_id = module.ngap.ngap_vpc.id
+  copy_retry_sleep_secs = 2
+  permissions_boundary_arn = var.permissions_boundary_arn
+  buckets = var.buckets
+  workflow_config = module.cumulus.workflow_config
+  region = var.region
+}
+```
+
+*Note*: This above snippet assumes that you've configured your Cumulus deployment. More information on that process can be found in their [documentation](https://nasa.github.io/cumulus/docs/deployment/deployment-readme#configure-and-deploy-the-cumulus-tf-root-module)
+
+#### Add necessary variables (unique to ORCA) to the Cumulus TF configuration
+
+To support this module, you'll have to add the following values to your `cumulus-tf/variables.tf` file:
+```
+# Variables specific to ORCA
+variable "database_user_pw" {
+  type = string
+}
+
+variable "database_name" {
+  type = string
+}
+
+variable "database_app_user" {
+  type = string
+}
+
+variable "database_app_user_pw" {
+  type = string
+}
+```
+
+The values corresponding to these variables must be set in your `cumulus-tf/terraform.tfvars` file, but note that many of these variables are actually hardcoded at the time of updating this README
+
+#### Adding the Copy To Glacier Step to the Ingest Workflow
+Navigate to `cumulus-tf/ingest_granule_workflow.tf` then add the following step after the PostToCMR step being sure to change the PostToCMR's "Next" paramter equal to "CopyToGlacier"
+```
+"CopyToGlacier":{
+         "Parameters":{
+            "cma":{
+               "event.$":"$",
+               "task_config":{
+                  "bucket":"{$.meta.buckets.internal.name}",
+                  "buckets":"{$.meta.buckets}",
+                  "distribution_endpoint":"{$.meta.distribution_endpoint}",
+                  "files_config":"{$.meta.collection.files}",
+                  "fileStagingDir":"{$.meta.collection.url_path}",
+                  "granuleIdExtraction":"{$.meta.collection.granuleIdExtraction}",
+                  "collection":"{$.meta.collection}",
+                  "cumulus_message":{
+                     "input":"{[$.payload.granules[*].files[*].filename]}",
+                     "outputs":[
+                        {
+                           "source":"{$}",
+                           "destination":"{$.payload}"
+                        }
+                     ]
+                  }
+               }
+            }
+         },
+         "Type":"Task",
+         "Resource":"${module.orca.copy_to_glacier_lambda_arn}",
+         "Catch":[
+            {
+               "ErrorEquals":[
+                  "States.ALL"
+               ],
+               "ResultPath":"$.exception",
+               "Next":"WorkflowFailed"
+            }
+         ],
+         "Retry":[
+            {
+               "ErrorEquals":[
+                  "States.ALL"
+               ],
+               "IntervalSeconds":2,
+               "MaxAttempts":3
+            }
+         ],
+         "Next":"WorkflowSucceeded"
+      },
+```
+
 ### Collection configuration
-To configure a collection to enable Disaster Recovery, add the line
-`"granuleRecoveryWorkflow": DrRecoveryWorkflow"` to the collection configuration:
+To configure a collection to enable ORCA, add the line
+`"granuleRecoveryWorkflow": "DrRecoveryWorkflow"` to the collection configuration:
 ```
 {
   "queriedAt": "2019-11-07T22:49:46.842Z",
@@ -192,8 +311,7 @@ To configure a collection to enable Disaster Recovery, add the line
   "provider_path": "L0A_HR_RAW/",
   "meta": {
     "response-endpoint": "arn:aws:sns:us-west-2:012345678912:providerResponseSNS",
-    "glacier-bucket": "podaac-sndbx-cumulus-glacier",
-    "granuleRecoveryWorkflow": DrRecoveryWorkflow"
+    "granuleRecoveryWorkflow": "DrRecoveryWorkflow"
   },
   "files": [
     {
