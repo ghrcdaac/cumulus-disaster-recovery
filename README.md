@@ -243,6 +243,57 @@ variable "database_app_user_pw" {
 
 The values corresponding to these variables must be set in your `cumulus-tf/terraform.tfvars` file, but note that many of these variables are actually hardcoded at the time of updating this README
 
+#### Adding the Copy To Glacier Step to the Ingest Workflow
+Navigate to `cumulus-tf/ingest_granule_workflow.tf` then add the following step after the PostToCMR step being sure to change the PostToCMR's "Next" paramter equal to "CopyToGlacier"
+```
+"CopyToGlacier":{
+         "Parameters":{
+            "cma":{
+               "event.$":"$",
+               "task_config":{
+                  "bucket":"{$.meta.buckets.internal.name}",
+                  "buckets":"{$.meta.buckets}",
+                  "distribution_endpoint":"{$.meta.distribution_endpoint}",
+                  "files_config":"{$.meta.collection.files}",
+                  "fileStagingDir":"{$.meta.collection.url_path}",
+                  "granuleIdExtraction":"{$.meta.collection.granuleIdExtraction}",
+                  "collection":"{$.meta.collection}",
+                  "cumulus_message":{
+                     "input":"{[$.payload.granules[*].files[*].filename]}",
+                     "outputs":[
+                        {
+                           "source":"{$}",
+                           "destination":"{$.payload}"
+                        }
+                     ]
+                  }
+               }
+            }
+         },
+         "Type":"Task",
+         "Resource":"${module.orca.copy_to_glacier_lambda_arn}",
+         "Catch":[
+            {
+               "ErrorEquals":[
+                  "States.ALL"
+               ],
+               "ResultPath":"$.exception",
+               "Next":"WorkflowFailed"
+            }
+         ],
+         "Retry":[
+            {
+               "ErrorEquals":[
+                  "States.ALL"
+               ],
+               "IntervalSeconds":2,
+               "MaxAttempts":3
+            }
+         ],
+         "Next":"WorkflowSucceeded"
+      },
+```
+
 ### Collection configuration
 To configure a collection to enable ORCA, add the line
 `"granuleRecoveryWorkflow": "DrRecoveryWorkflow"` to the collection configuration:
